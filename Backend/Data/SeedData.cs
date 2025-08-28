@@ -1,69 +1,67 @@
 
+using Microsoft.EntityFrameworkCore;
 using Fintcs.Api.Models;
 using BCrypt.Net;
 
 namespace Fintcs.Api.Data
 {
-    public static class SeedData
+    public class SeedData
     {
-        public static async Task Initialize(FintcsDbContext context)
-        {
-            // Ensure database is created
-            await context.Database.EnsureCreatedAsync();
+        private readonly FintcsDbContext _context;
 
-            // Check if super admin already exists
-            if (context.Users.Any(u => u.Username == "admin"))
+        public SeedData(FintcsDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task SeedAsync()
+        {
+            // Check if super admin exists
+            var existingAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == "admin");
+
+            if (existingAdmin == null)
             {
-                return; // DB has been seeded
+                // Create super admin
+                var superAdmin = new User
+                {
+                    Id = Guid.NewGuid(),
+                    Username = "admin",
+                    Email = "admin@fintcs.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    Role = "SuperAdmin",
+                    Name = "Super Administrator",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(superAdmin);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Super admin created successfully");
             }
 
-            // Create super admin
-            var superAdmin = new User
+            // Create default society if none exists
+            var existingSociety = await _context.Societies.FirstOrDefaultAsync();
+            if (existingSociety == null)
             {
-                Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
-                Name = "Super Administrator",
-                Role = "SuperAdmin",
-                Email = "admin@fintcs.com",
-                IsActive = true
-            };
+                var defaultSociety = new Society
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Default Society",
+                    Code = "DEF001",
+                    Address = "Default Address",
+                    ContactPerson = "Admin",
+                    Phone = "1234567890",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            context.Users.Add(superAdmin);
-
-            // Seed lookup data
-            var loanTypes = new List<LoanType>
-            {
-                new() { Name = "Personal Loan", IsActive = true },
-                new() { Name = "Home Loan", IsActive = true },
-                new() { Name = "Vehicle Loan", IsActive = true },
-                new() { Name = "Emergency Loan", IsActive = true },
-                new() { Name = "Education Loan", IsActive = true }
-            };
-
-            context.LoanTypes.AddRange(loanTypes);
-
-            var banks = new List<Bank>
-            {
-                new() { Name = "State Bank of India", IsActive = true },
-                new() { Name = "HDFC Bank", IsActive = true },
-                new() { Name = "ICICI Bank", IsActive = true },
-                new() { Name = "Punjab National Bank", IsActive = true },
-                new() { Name = "Bank of Baroda", IsActive = true }
-            };
-
-            context.Banks.AddRange(banks);
-
-            var voucherTypes = new List<VoucherType>
-            {
-                new() { Name = "Receipt Voucher", IsActive = true },
-                new() { Name = "Payment Voucher", IsActive = true },
-                new() { Name = "Journal Voucher", IsActive = true },
-                new() { Name = "Contra Voucher", IsActive = true }
-            };
-
-            context.VoucherTypes.AddRange(voucherTypes);
-
-            await context.SaveChangesAsync();
+                _context.Societies.Add(defaultSociety);
+                await _context.SaveChangesAsync();
+                Console.WriteLine("Default society created successfully");
+            }
         }
     }
 }

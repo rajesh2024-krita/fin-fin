@@ -5,23 +5,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Fintcs.Api.Data;
 using Fintcs.Api.Services;
-using Fintcs.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Database
+// Configure SQL Server
 builder.Services.AddDbContext<FintcsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
-
-// JWT Authentication
+// Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];
 
@@ -36,50 +32,56 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
         };
     });
 
-// CORS
+builder.Services.AddAuthorization();
+
+// Register services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISocietyService, SocietyService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddScoped<IVoucherService, VoucherService>();
+builder.Services.AddScoped<SeedData>();
+
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://0.0.0.0:4200")
-              .AllowAnyHeader()
+        policy.WithOrigins("http://localhost:4200", "https://*.replit.dev", "https://*.repl.co")
               .AllowAnyMethod()
+              .AllowAnyHeader()
               .AllowCredentials();
     });
 });
 
-// Services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ISocietyService, SocietyService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IMemberService, MemberService>();
-builder.Services.AddScoped<ILoanService, LoanService>();
-builder.Services.AddScoped<IVoucherService, VoucherService>();
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Seed database
+// Ensure database is created and seeded
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FintcsDbContext>();
-    await SeedData.Initialize(context);
+    context.Database.EnsureCreated();
+    
+    var seedData = scope.ServiceProvider.GetRequiredService<SeedData>();
+    await seedData.SeedAsync();
 }
 
 app.Run("http://0.0.0.0:5000");

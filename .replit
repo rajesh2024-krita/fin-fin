@@ -54,11 +54,11 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run backend:dev"
+args = "cd Backend && dotnet run --urls=http://0.0.0.0:5000"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run frontend:dev"
+args = "cd Frontend && npm start"
 
 [agent]
 integrations = ["javascript_database==1.0.0", "javascript_log_in_with_replit==1.0.0"]
