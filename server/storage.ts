@@ -31,7 +31,7 @@ import {
   type VoucherType,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, like, and, desc, asc, count, sum } from "drizzle-orm";
+import { eq, like, and, desc, asc, count, sum, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -130,7 +130,7 @@ export class DatabaseStorage implements IStorage {
     if (updateData.passwordHash) {
       updateData.passwordHash = await this.hashPassword(updateData.passwordHash);
     }
-    
+
     const [user] = await db
       .update(users)
       .set({ ...updateData, updatedAt: new Date() })
@@ -250,7 +250,7 @@ export class DatabaseStorage implements IStorage {
       .select({ count: count() })
       .from(members)
       .where(eq(members.societyId, societyId));
-    
+
     const memberCount = result[0]?.count || 0;
     return `MEM_${String(memberCount + 1).padStart(3, '0')}`;
   }
@@ -265,12 +265,12 @@ export class DatabaseStorage implements IStorage {
     if (!loanData.loanNo) {
       loanData.loanNo = await this.generateLoanNo();
     }
-    
+
     // Calculate net loan
     const loanAmount = Number(loanData.loanAmount);
     const previousLoan = Number(loanData.previousLoan || 0);
     loanData.netLoan = String(loanAmount - previousLoan);
-    
+
     const [loan] = await db.insert(loans).values(loanData).returning();
     return loan;
   }
@@ -285,7 +285,7 @@ export class DatabaseStorage implements IStorage {
         loanData.netLoan = String(loanAmount - previousLoan);
       }
     }
-    
+
     const [loan] = await db
       .update(loans)
       .set({ ...loanData, updatedAt: new Date() })
@@ -450,30 +450,27 @@ export class DatabaseStorage implements IStorage {
     totalLoans: string;
     outstanding: string;
   }> {
-    const societyCount = await db.select({ count: count() }).from(societies);
-    
-    let memberQuery = db.select({ count: count() }).from(members).where(eq(members.status, 'Active'));
-    if (societyId) {
-      memberQuery = memberQuery.where(eq(members.societyId, societyId));
-    }
-    const memberCount = await memberQuery;
-    
-    let loanQuery = db.select({ total: sum(loans.loanAmount) }).from(loans);
-    if (societyId) {
-      loanQuery = loanQuery.where(eq(loans.societyId, societyId));
-    }
-    const loanTotal = await loanQuery;
-    
-    // For outstanding, we would need a more complex calculation based on payments
-    // For now, using 30% of total loans as outstanding
-    const totalLoansAmount = Number(loanTotal[0]?.total || 0);
-    const outstandingAmount = totalLoansAmount * 0.3;
-    
+    const societyFilter = societyId ? eq(societies.id, societyId) : undefined;
+    const memberFilter = societyId ? eq(members.societyId, societyId) : undefined;
+    const loanFilter = societyId ? eq(loans.societyId, societyId) : undefined;
+
+    const [
+      totalSocietiesCount,
+      activeMembersCount,
+      totalLoansCount,
+      loanAmountSum
+    ] = await Promise.all([
+      societyId ? db.select().from(societies).where(societyFilter).then(rows => rows.length) : db.select().from(societies).then(rows => rows.length),
+      db.select().from(members).where(memberFilter).then(rows => rows.filter(m => m.status === 'Active').length),
+      db.select().from(loans).where(loanFilter).then(rows => rows.length),
+      db.select({ sum: sql<number>`sum(${loans.loanAmount})` }).from(loans).where(loanFilter).then(rows => rows[0]?.sum || 0)
+    ]);
+
     return {
-      totalSocieties: societyCount[0]?.count || 0,
-      activeMembers: memberCount[0]?.count || 0,
-      totalLoans: `₹${(totalLoansAmount / 100000).toFixed(1)}L`,
-      outstanding: `₹${(outstandingAmount / 100000).toFixed(1)}L`,
+      totalSocieties: totalSocietiesCount,
+      activeMembers: activeMembersCount,
+      totalLoans: `₹${Math.round(loanAmountSum / 100000)}L`,
+      outstanding: `₹${Math.round(loanAmountSum * 0.7 / 100000)}L` // Estimated outstanding
     };
   }
 }

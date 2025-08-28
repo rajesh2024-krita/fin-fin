@@ -6,73 +6,43 @@ import {
   LayoutDashboard,
   Building,
   Users,
-  UserCheck,
-  DollarSign,
+  UserPlus,
+  CreditCard,
   Calendar,
   Receipt,
   BarChart3,
-  LogOut,
+  FileText,
   ChartLine,
+  LogOut,
 } from "lucide-react";
 
-const navigation = [
-  {
-    name: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-    roles: ["SuperAdmin", "SocietyAdmin", "User", "Member"],
-  },
-  {
-    name: "Societies",
-    href: "/societies",
-    icon: Building,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Users",
-    href: "/users",
-    icon: Users,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Members",
-    href: "/members",
-    icon: UserCheck,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Loan Entry",
-    href: "/loans",
-    icon: DollarSign,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Monthly Demand",
-    href: "/monthly-demand",
-    icon: Calendar,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Vouchers",
-    href: "/vouchers",
-    icon: Receipt,
-    roles: ["SuperAdmin", "SocietyAdmin"],
-  },
-  {
-    name: "Reports",
-    href: "/reports",
-    icon: BarChart3,
-    roles: ["SuperAdmin", "SocietyAdmin", "User"],
-  },
-];
+interface NavItemProps {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}
+
+function NavItem({ href, icon, label }: NavItemProps) {
+  const [location, setLocation] = useLocation();
+  const isActive = location === href || (href === "/dashboard" && location === "/");
+
+  return (
+    <button
+      onClick={() => setLocation(href)}
+      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-left ${
+        isActive
+          ? "bg-primary-foreground/10 text-primary-foreground font-medium"
+          : "text-primary-foreground/80 hover:bg-primary-foreground/5 hover:text-primary-foreground"
+      }`}
+    >
+      <span className="text-sm">{icon}</span>
+      <span className="text-sm">{label}</span>
+    </button>
+  );
+}
 
 export function Sidebar() {
-  const [location] = useLocation();
   const { user, logout } = useAuth();
-
-  const filteredNavigation = navigation.filter((item) =>
-    item.roles.includes(user?.role || "")
-  );
 
   return (
     <aside className="w-64 bg-primary text-primary-foreground flex-shrink-0 sidebar-transition">
@@ -110,25 +80,34 @@ export function Sidebar() {
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto py-4">
           <div className="space-y-1 px-3">
-            {filteredNavigation.map((item) => {
-              const isActive = location === item.href;
-              return (
-                <Link key={item.name} href={item.href}>
-                  <a
-                    className={cn(
-                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
-                      isActive
-                        ? "bg-primary-foreground/10 text-primary-foreground"
-                        : "hover:bg-primary-foreground/10"
-                    )}
-                    data-testid={`nav-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </a>
-                </Link>
-              );
-            })}
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2">
+              Main
+            </p>
+
+            <NavItem href="/dashboard" icon={<BarChart3 />} label="Dashboard" />
+
+            {(user?.role === "SuperAdmin" || user?.role === "SocietyAdmin") && (
+              <>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2 mt-6">
+                  Management
+                </p>
+
+                {user?.role === "SuperAdmin" && (
+                  <NavItem href="/societies" icon={<Building />} label="Societies" />
+                )}
+
+                <NavItem href="/users" icon={<Users />} label="Users" />
+                <NavItem href="/members" icon={<UserPlus />} label="Members" />
+                <NavItem href="/loans" icon={<CreditCard />} label="Loans" />
+                <NavItem href="/monthly-demand" icon={<Calendar />} label="Monthly Demand" />
+                <NavItem href="/vouchers" icon={<Receipt />} label="Vouchers" />
+
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2 mt-6">
+                  Reports
+                </p>
+                <NavItem href="/reports" icon={<FileText />} label="Reports" />
+              </>
+            )}
           </div>
         </nav>
 

@@ -1,20 +1,28 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MemberForm } from "@/components/forms/MemberForm";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { hasRole } from "@/lib/authUtils";
-import { apiRequest } from "@/lib/queryClient";
-import { Plus, Eye, Edit, Trash2, Upload } from "lucide-react";
+import { Plus, Users, Eye, Edit, UserPlus } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import type { Member } from "@shared/schema";
+
+interface Member {
+  id: string;
+  memNo: string;
+  name: string;
+  email: string;
+  mobile: string;
+  designation: string;
+  status: string;
+  openingBalanceShare: string;
+}
 
 const memberColumns: ColumnDef<Member>[] = [
   {
@@ -26,62 +34,48 @@ const memberColumns: ColumnDef<Member>[] = [
   },
   {
     accessorKey: "name",
-    header: "Member Name",
-    cell: ({ row }) => (
-      <div>
-        <p className="text-sm font-medium">{row.getValue("name")}</p>
-        <p className="text-xs text-muted-foreground">{row.original.designation}</p>
-      </div>
-    ),
+    header: "Name",
+  },
+  {
+    accessorKey: "designation",
+    header: "Designation",
   },
   {
     accessorKey: "mobile",
     header: "Mobile",
   },
   {
-    accessorKey: "branch",
-    header: "Branch",
+    accessorKey: "email",
+    header: "Email",
   },
   {
-    accessorKey: "city",
-    header: "City",
-  },
-  {
-    accessorKey: "dojSociety",
-    header: "DOJ Society",
-    cell: ({ row }) => {
-      const date = row.getValue("dojSociety") as string;
-      return date ? new Date(date).toLocaleDateString() : "-";
-    },
+    accessorKey: "openingBalanceShare",
+    header: "Share Balance",
+    cell: ({ row }) => (
+      <div className="font-mono">₹{Number(row.getValue("openingBalanceShare") || 0).toLocaleString()}</div>
+    ),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <Badge variant={status === "Active" ? "default" : "secondary"}>
-          {status}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <span className={`px-2 py-1 rounded-full text-xs ${
+        row.getValue("status") === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+      }`}>
+        {row.getValue("status")}
+      </span>
+    ),
   },
   {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
       <div className="flex space-x-2">
-        <Button variant="ghost" size="sm" data-testid={`view-member-${row.original.id}`}>
+        <Button variant="ghost" size="sm">
           <Eye className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" data-testid={`edit-member-${row.original.id}`}>
+        <Button variant="ghost" size="sm">
           <Edit className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="sm" data-testid={`upload-member-${row.original.id}`}>
-          <Upload className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="sm" data-testid={`delete-member-${row.original.id}`}>
-          <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>
     ),
@@ -95,12 +89,21 @@ export default function Members() {
   const queryClient = useQueryClient();
 
   const { data: members = [], isLoading } = useQuery<Member[]>({
-    queryKey: ["/api", "members"],
+    queryKey: ["/api/members"],
   });
 
   const createMemberMutation = useMutation({
-    mutationFn: async (memberData: any) => {
-      return await apiRequest("POST", "/api/members", memberData);
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/members", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Failed to create member");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/members"] });
@@ -110,37 +113,20 @@ export default function Members() {
         description: "Member created successfully",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create member",
+        description: "Failed to create member",
         variant: "destructive",
       });
     },
   });
 
-  const canCreateMember = hasRole(user?.role || "", ["SuperAdmin", "SocietyAdmin"]);
-  const canSelectSociety = hasRole(user?.role || "", ["SuperAdmin"]);
+  const handleCreateMember = (data: any) => {
+    createMemberMutation.mutate(data);
+  };
 
-  const filterOptions = [
-    {
-      key: "status",
-      label: "Status",
-      options: [
-        { label: "Active", value: "Active" },
-        { label: "Inactive", value: "Inactive" },
-      ],
-    },
-    {
-      key: "branch",
-      label: "Branch",
-      options: [
-        { label: "Main Branch", value: "Main Branch" },
-        { label: "Sub Branch", value: "Sub Branch" },
-        { label: "Regional Office", value: "Regional Office" },
-      ],
-    },
-  ];
+  const canCreateMember = user?.role === "SuperAdmin" || user?.role === "SocietyAdmin";
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -148,53 +134,99 @@ export default function Members() {
       <main className="flex-1 overflow-hidden flex flex-col">
         <Header 
           title="Member Management" 
-          subtitle="Manage society members and their information" 
+          subtitle="Manage society members and their details" 
         />
         
         <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-foreground">Society Members</h3>
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Members</p>
+                      <p className="text-3xl font-bold">{members.length}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Active Members</p>
+                      <p className="text-3xl font-bold">{members.filter(m => m.status === "Active").length}</p>
+                    </div>
+                    <UserPlus className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Share Balance</p>
+                      <p className="text-2xl font-bold">₹{members.reduce((sum, m) => sum + Number(m.openingBalanceShare || 0), 0).toLocaleString()}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-accent" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Inactive Members</p>
+                      <p className="text-3xl font-bold">{members.filter(m => m.status !== "Active").length}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Members Table */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Members</CardTitle>
                 {canCreateMember && (
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button data-testid="button-add-member">
+                      <Button>
                         <Plus className="w-4 h-4 mr-2" />
                         Add Member
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Add New Member</DialogTitle>
+                        <DialogTitle>Create New Member</DialogTitle>
                       </DialogHeader>
-                      <MemberForm
-                        onSubmit={(data) => createMemberMutation.mutate(data)}
-                        isLoading={createMemberMutation.isPending}
-                        onCancel={() => setIsDialogOpen(false)}
-                        canSelectSociety={canSelectSociety}
-                        defaultValues={{ societyId: canSelectSociety ? "" : user?.societyId }}
-                      />
+                      <MemberForm onSubmit={handleCreateMember} />
                     </DialogContent>
                   </Dialog>
                 )}
-              </div>
-
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="loading-spinner h-8 w-8"></div>
-                </div>
-              ) : (
-                <DataTable
-                  columns={memberColumns}
-                  data={members}
-                  searchKey="name"
-                  searchPlaceholder="Search members..."
-                  filters={filterOptions}
-                />
-              )}
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <DataTable
+                    columns={memberColumns}
+                    data={members}
+                    searchKey="name"
+                    searchPlaceholder="Search members..."
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>

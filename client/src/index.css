@@ -394,7 +394,7 @@
 
 /* Professional sidebar enhancements */
 .sidebar-header {
-  @apply p-6 border-b border-primary/20;
+  @apply p-6 border-b border-border;
 }
 
 .sidebar-logo {
