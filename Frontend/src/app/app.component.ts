@@ -1,7 +1,6 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, RouterModule } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
@@ -9,7 +8,7 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent],
+  imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent, RouterModule],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div *ngIf="!isLoginPage" class="flex h-screen">
@@ -17,7 +16,7 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
         <div class="w-64 bg-white shadow-sm border-r border-gray-200">
           <app-sidebar></app-sidebar>
         </div>
-        
+
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
           <app-header></app-header>
@@ -26,7 +25,7 @@ import { SidebarComponent } from './shared/components/sidebar/sidebar.component'
           </main>
         </div>
       </div>
-      
+
       <!-- Login Page -->
       <div *ngIf="isLoginPage" class="min-h-screen">
         <router-outlet></router-outlet>
