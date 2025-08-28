@@ -18,7 +18,7 @@ externalPort = 80
 PORT = "5000"
 
 [workflows]
-runButton = "Project"
+runButton = "Start Full Application"
 
 [[workflows.workflow]]
 name = "Project"
@@ -37,6 +37,28 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Install Dependencies"
+author = 46978677
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run install:all"
+
+[[workflows.workflow]]
+name = "Start Full Application"
+author = 46978677
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run backend:dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run frontend:dev"
 
 [agent]
 integrations = ["javascript_database==1.0.0", "javascript_log_in_with_replit==1.0.0"]
