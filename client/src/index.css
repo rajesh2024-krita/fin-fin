@@ -1,0 +1,511 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(210 20% 98%);
+  --foreground: hsl(222 84% 4.9%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222 84% 4.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 84% 4.9%);
+  --primary: hsl(222 47% 20%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(160 60% 45%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215 16% 47%);
+  --accent: hsl(43 96% 56%);
+  --accent-foreground: hsl(222 47% 20%);
+  --destructive: hsl(0 85% 60%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(222 47% 20%);
+  --chart-1: hsl(222 47% 20%);
+  --chart-2: hsl(160 60% 45%);
+  --chart-3: hsl(43 96% 56%);
+  --chart-4: hsl(147 78% 42%);
+  --chart-5: hsl(341 75% 51%);
+  --sidebar: hsl(222 47% 20%);
+  --sidebar-foreground: hsl(210 40% 98%);
+  --sidebar-primary: hsl(222 47% 20%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent: hsl(43 96% 56%);
+  --sidebar-accent-foreground: hsl(222 47% 20%);
+  --sidebar-border: hsl(222 47% 20%);
+  --sidebar-ring: hsl(222 47% 20%);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Georgia', serif;
+  --font-mono: 'Menlo', monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(222 47% 20% / 0.05);
+  --shadow-xs: 0px 2px 0px 0px hsl(222 47% 20% / 0.05);
+  --shadow-sm: 0px 1px 2px 0px hsl(222 47% 20% / 0.05);
+  --shadow: 0px 1px 3px 0px hsl(222 47% 20% / 0.1), 0px 1px 2px -1px hsl(222 47% 20% / 0.1);
+  --shadow-md: 0px 4px 6px -1px hsl(222 47% 20% / 0.1), 0px 2px 4px -2px hsl(222 47% 20% / 0.1);
+  --shadow-lg: 0px 10px 15px -3px hsl(222 47% 20% / 0.1), 0px 4px 6px -4px hsl(222 47% 20% / 0.1);
+  --shadow-xl: 0px 20px 25px -5px hsl(222 47% 20% / 0.1), 0px 8px 10px -6px hsl(222 47% 20% / 0.1);
+  --shadow-2xl: 0px 25px 50px -12px hsl(222 47% 20% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(222 47% 8%);
+  --foreground: hsl(210 40% 98%);
+  --card: hsl(222 47% 12%);
+  --card-foreground: hsl(210 40% 98%);
+  --popover: hsl(222 47% 8%);
+  --popover-foreground: hsl(210 40% 98%);
+  --primary: hsl(222 47% 20%);
+  --primary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(160 60% 45%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(222 47% 15%);
+  --muted-foreground: hsl(215 16% 65%);
+  --accent: hsl(43 96% 56%);
+  --accent-foreground: hsl(222 47% 8%);
+  --destructive: hsl(0 85% 60%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(222 47% 15%);
+  --input: hsl(222 47% 15%);
+  --ring: hsl(222 47% 20%);
+  --chart-1: hsl(222 47% 20%);
+  --chart-2: hsl(160 60% 45%);
+  --chart-3: hsl(43 96% 56%);
+  --chart-4: hsl(147 78% 42%);
+  --chart-5: hsl(341 75% 51%);
+  --sidebar: hsl(222 47% 12%);
+  --sidebar-foreground: hsl(210 40% 98%);
+  --sidebar-primary: hsl(222 47% 20%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent: hsl(43 96% 56%);
+  --sidebar-accent-foreground: hsl(222 47% 8%);
+  --sidebar-border: hsl(222 47% 15%);
+  --sidebar-ring: hsl(222 47% 20%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Professional Finance Dashboard Styles */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.table-row-hover {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.table-row-hover:hover {
+  background-color: hsl(210 40% 98%);
+}
+
+.chart-container {
+  height: 300px;
+}
+
+/* Professional form styling */
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.form-section {
+  @apply space-y-4 p-6 border border-gray-200 rounded-lg bg-white;
+}
+
+/* Professional button enhancements */
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 shadow-sm;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 shadow-sm;
+}
+
+.btn-accent {
+  @apply bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm;
+}
+
+/* Professional table enhancements */
+.data-table {
+  @apply border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm;
+}
+
+.data-table th {
+  @apply bg-gray-50 border-b border-gray-200 text-gray-600 font-medium;
+}
+
+.data-table td {
+  @apply border-b border-gray-100;
+}
+
+/* Professional badge styling */
+.badge-active {
+  @apply bg-emerald-100 text-emerald-700 border-emerald-200;
+}
+
+.badge-inactive {
+  @apply bg-gray-100 text-gray-600 border-gray-200;
+}
+
+.badge-pending {
+  @apply bg-yellow-100 text-yellow-700 border-yellow-200;
+}
+
+.badge-approved {
+  @apply bg-emerald-100 text-emerald-700 border-emerald-200;
+}
+
+.badge-rejected {
+  @apply bg-red-100 text-red-700 border-red-200;
+}
+
+/* Professional loading spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-200 border-t-blue-600;
+}
+
+/* Professional form validation */
+.form-error {
+  @apply text-sm text-red-600 mt-1;
+}
+
+.form-success {
+  @apply text-sm text-emerald-600 mt-1;
+}
+
+/* Responsive professional layout */
+@media (max-width: 768px) {
+  .sidebar-transition {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-open {
+    transform: translateX(0);
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Professional dashboard stats cards */
+.stats-card {
+  @apply bg-card border border-border rounded-lg p-6 shadow-sm card-hover;
+}
+
+.stats-icon {
+  @apply w-12 h-12 rounded-lg flex items-center justify-center;
+}
+
+.stats-value {
+  @apply text-3xl font-bold text-foreground;
+}
+
+.stats-label {
+  @apply text-sm font-medium text-muted-foreground;
+}
+
+.stats-change {
+  @apply text-sm font-medium;
+}
+
+.stats-change-positive {
+  @apply text-secondary;
+}
+
+.stats-change-negative {
+  @apply text-destructive;
+}
+
+/* Professional navigation styling */
+.nav-item {
+  @apply flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors;
+}
+
+.nav-item:hover {
+  @apply bg-blue-50;
+}
+
+.nav-item.active {
+  @apply bg-blue-50 text-blue-600;
+}
+
+/* Professional modal/dialog styling */
+.dialog-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50;
+}
+
+.dialog-content {
+  @apply bg-card rounded-lg shadow-xl border border-border;
+}
+
+/* Professional toast notifications */
+.toast {
+  @apply bg-card border border-border rounded-lg shadow-lg;
+}
+
+.toast-success {
+  @apply border-l-4 border-l-secondary;
+}
+
+.toast-error {
+  @apply border-l-4 border-l-destructive;
+}
+
+.toast-warning {
+  @apply border-l-4 border-l-accent;
+}
+
+/* Professional finance-specific styling */
+.finance-amount {
+  @apply font-mono text-right;
+}
+
+.finance-positive {
+  @apply text-secondary;
+}
+
+.finance-negative {
+  @apply text-destructive;
+}
+
+.finance-neutral {
+  @apply text-muted-foreground;
+}
+
+/* Professional voucher entry styling */
+.voucher-line {
+  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
+}
+
+.voucher-total {
+  @apply bg-gray-100 font-bold;
+}
+
+.voucher-balanced {
+  @apply bg-green-50 text-green-600;
+}
+
+.voucher-unbalanced {
+  @apply bg-red-50 text-red-600;
+}
+
+/* Professional demand processing styling */
+.demand-row {
+  @apply hover:bg-gray-50 transition-colors;
+}
+
+.demand-header {
+  @apply bg-gray-100 font-semibold;
+}
+
+.demand-total {
+  @apply bg-blue-50 font-bold;
+}
+
+/* Professional report styling */
+.report-header {
+  @apply bg-card border-b border-border p-4 font-semibold;
+}
+
+.report-row {
+  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
+}
+
+.report-summary {
+  @apply bg-gray-100 font-bold;
+}
+
+/* Improved data table styling */
+.data-table-container {
+  @apply border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm;
+}
+
+.data-table-header {
+  @apply bg-gray-100 border-b border-gray-200;
+}
+
+.data-table-cell {
+  @apply px-4 py-3 text-sm;
+}
+
+.data-table-cell-numeric {
+  @apply text-right font-mono;
+}
+
+.data-table-cell-currency {
+  @apply text-right font-mono font-semibold;
+}
+
+/* Enhanced form styling for finance applications */
+.finance-form-section {
+  @apply space-y-6 p-6 border border-border rounded-lg bg-card shadow-sm;
+}
+
+.finance-form-header {
+  @apply text-lg font-semibold text-foreground border-b border-border pb-4 mb-4;
+}
+
+.finance-input-group {
+  @apply space-y-2;
+}
+
+.finance-input-label {
+  @apply text-sm font-medium text-foreground;
+}
+
+.finance-input-required::after {
+  content: ' *';
+  @apply text-destructive;
+}
+
+.finance-input {
+  @apply w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent;
+}
+
+.finance-input-currency {
+  @apply finance-input text-right font-mono;
+}
+
+.finance-input-error {
+  @apply border-destructive focus:ring-destructive;
+}
+
+/* Professional sidebar enhancements */
+.sidebar-header {
+  @apply p-6 border-b border-primary/20;
+}
+
+.sidebar-logo {
+  @apply flex items-center space-x-3;
+}
+
+.sidebar-brand {
+  @apply text-xl font-bold text-primary-foreground;
+}
+
+.sidebar-tagline {
+  @apply text-xs opacity-80 text-primary-foreground;
+}
+
+.sidebar-nav {
+  @apply flex-1 overflow-y-auto py-4;
+}
+
+.sidebar-nav-section {
+  @apply space-y-1 px-3;
+}
+
+.sidebar-nav-heading {
+  @apply px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2 text-primary-foreground;
+}
+
+.sidebar-nav-item {
+  @apply flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-primary-foreground;
+}
+
+.sidebar-nav-item:hover {
+  @apply bg-primary-foreground/10;
+}
+
+.sidebar-nav-item.active {
+  @apply bg-primary-foreground/10;
+}
+
+/* Professional header styling */
+.main-header {
+  @apply bg-card border-b border-border p-4 shadow-sm;
+}
+
+.header-title {
+  @apply text-2xl font-bold text-foreground;
+}
+
+.header-subtitle {
+  @apply text-muted-foreground;
+}
+
+.header-actions {
+  @apply flex items-center space-x-4;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .stats-card {
+    @apply p-4;
+  }
+  
+  .stats-value {
+    @apply text-2xl;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .data-table-cell {
+    @apply px-2 py-2 text-xs;
+  }
+  
+  .header-title {
+    @apply text-xl;
+  }
+  
+  .sidebar-nav-item {
+    @apply px-2 py-1;
+  }
+}
+
+/* Print styles for reports */
+@media print {
+  .sidebar,
+  .header-actions,
+  .card-hover,
+  .nav-item {
+    @apply hidden;
+  }
+  
+  .main-content {
+    @apply w-full;
+  }
+  
+  .report-header {
+    @apply bg-white text-black;
+  }
+  
+  .data-table {
+    @apply border border-black;
+  }
+  
+  .data-table th,
+  .data-table td {
+    @apply border border-black;
+  }
+}
