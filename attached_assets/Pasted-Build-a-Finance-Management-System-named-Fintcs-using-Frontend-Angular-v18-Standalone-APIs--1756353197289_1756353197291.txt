@@ -1,0 +1,252 @@
+Build a Finance Management System named "Fintcs" using:
+- Frontend: Angular (v18, Standalone APIs, Routing, Http Interceptor) + Tailwind CSS for styling
+- Backend: ASP.Net Core Web API (C#)
+- Database: SQL Server (DB name: Fintcs on localhost)
+
+==================================================
+CORE FEATURES & ROLES
+==================================================
+Roles:
+1) Super Admin
+2) Society Admin
+3) User
+4) Member
+
+Authentication & Authorization:
+- JWT-based token authentication
+- Seed Super Admin:
+  Username: admin
+  Password: admin
+- Role-based route guards on frontend and [Authorize(Roles="...")] on backend
+- Passwords hashed (e.g., PBKDF2/BCrypt)
+
+==================================================
+FRONTEND (ANGULAR + TAILWIND)
+==================================================
+Use Tailwind CSS for all styling (no CSS frameworks). Configure Tailwind in Angular (postcss config, tailwind.config.js, import in styles.css). Keep clean, responsive forms and tables.
+
+Project Structure (sample):
+/src/app/
+  core/ (auth.service.ts, token.interceptor.ts, role.guard.ts)
+  shared/ (models, utils, validators, components)
+  features/
+    auth/ (login)
+    dashboard/ (role-based dashboards)
+    societies/ (society management)
+    users/ (user management)
+    members/ (member management)
+    loans/ (loan entry + report)
+    demand/ (monthly demand processing)
+    vouchers/ (voucher creation)
+  app.routes.ts
+
+Common UI Requirements:
+- Use Tailwind utility classes for layout and spacing
+- Form fields with validation messages
+- Reusable table component with sorting, filtering, pagination
+- Reusable dropdown, date picker wrappers
+- Disable Save buttons until valid
+- Toast notifications for success/error
+
+1) Login & Dashboard
+- Role-based navigation and dashboards:
+  - Super Admin: system overview
+  - Society Admin: own society + pending approvals
+  - User: read-only society view
+  - Member: profile, loans, savings
+
+2) Society Management
+- Super Admin:
+  - Create societies, assign Society Admins
+  - Manage Users & Members (any society)
+- Society Admin:
+  - View/Edit own society (edits go to pending; update after all users accept)
+  - Manage Users & Members (own society)
+- Society form fields:
+  - Name, Address, City, Phone, Fax, Email, Website, Registration No
+  - Tabs:
+    - Interest (Dividend, OD, CD, Loan, EmergencyLoan, LAS)
+    - Limit (Share, Loan, Emergency Loan)
+  - Dropdown: Ch bounce charge (number + dropdown: Excess Provision, Cash, HDFC Bank, Inverter)
+
+3) User Management (Create/Edit/View)
+- Fields:
+  EDP No, Name, Address(O), Address(R), Designation,
+  Phone(O), Phone(R), Mobile, Email, Username, Password, Confirm Password
+- Users can login and view society (read-only)
+
+4) Member Management (Create/Edit/View)
+- Fields:
+  Mem No (Auto: MEM_001, MEM_002, ...),
+  Name, Father/Husband Name, Office Address, City,
+  Phone(Office), Branch, Phone(Res.), Mobile, Designation,
+  Residence Address, DOB, DOJ Society, Email, DOJ(Org), DOR,
+  Nominee, Nominee Relation, Opening Balance (Share), Value,
+  Dropdown: Cr / Dr / CD,
+  Bank: Bank Name, Payable At, Account No.,
+  Status: Active/Deactive, Date,
+  Deductions (multi-select): Share, Withdrawal, G Loan Instalment, E Loan Instalment,
+  Photo Upload, Signature Upload
+- Branch selection rule:
+  - Super Admin adds member → can choose any society
+  - Society Admin adds member → fixed to own society
+
+5) Loan Entry Form
+- Fields:
+  Loan Type (Dropdown: General, Personal, Housing, Vehicle, Education, Others),
+  Loan No. (Auto + New + Search),
+  Loan Date (Date; default today),
+  EDP No. (Text + Search), Name (Text),
+  Loan Amount, Previous Loan (Remaining), Net Loan (Auto: Loan Amount - Previous Loan),
+  No. of Installments, Installment Amount,
+  Purpose (Multiline),
+  Authorized By (Text),
+  Payment Mode (Radio: Cash, Cheque, Opening),
+  Bank (Dropdown),
+  Cheque No., Cheque Date,
+  Share, CD, Last Salary, MWF, Pay Amount (Numeric),
+  Given Table: MemNo, Name
+  Taken Table: MemNo, Name
+- Buttons: Validate, Save, Close, Clear
+- Behavior:
+  - Auto-calc Net Loan
+  - Validate numeric/date fields
+  - Save only after Validate passes
+  - Loan Type & Bank loaded from backend (configurable)
+
+6) Monthly Demand Processing
+- Fields:
+  Month (Dropdown: JAN–DEC), Year (Dropdown: 2000–2050), New (new monthly record)
+- Tabs: Demand, Month Closing
+- Demand Table Columns:
+  EDP No, Member Name, Loan Amt, CD, Loan, Interest, E-Loan, Interest..., Net..., IntDue, PInt, P Ded, LAS, Int, LASIntDue
+- Below Table:
+  Total No. of Members (Auto), Total Amount (Auto)
+- Member Section:
+  EDP No, Name, Loan, Emrg. Loan, Int due, LAS Int due, CD, Intrest, P. Int, P. ded, LAS, Total Amount (Auto)
+- Buttons: Excel (export), Print, Print Loan, Save, Clear, Reset, Close
+- Behavior:
+  - Month/Year selection refreshes data
+  - Editable table with numeric/decimal validation
+  - Auto-calc totals & counts
+  - Exports (Excel) and print views
+
+7) Voucher Creation
+- Header:
+  Voucher Type (Dropdown: Payment, Receipt, Journal, Contra, Adjustment, Others),
+  Voucher No. (Auto + Search), Date (Date; default today)
+- Table:
+  Particulars (Text/Dropdown), Debit (Numeric), Credit (Numeric)
+- Entry Section:
+  Db/Cr (Dropdown: Debit, Credit), Particulars (Text/Dropdown), Ibldbc (Numeric default 0)
+  Buttons: Add (append to table), Clear (line reset)
+- Totals:
+  Total Debit (Auto), Total Credit (Auto) — must balance before Save
+- Other Fields:
+  Ch. No., Cheque Date, Narration (Multiline), Remarks (Multiline), Pass Date
+- Buttons: Reverse, Save, Print, Delete, New, Close
+- Behavior:
+  - Configurable dropdowns from backend
+  - Dynamic totals, balance check pre-save
+
+8) Loan Report Screen
+- Main Table:
+  EDP No, Name, Amount, Loan Date, Principal, Interest, Penal, Total (Auto: Principal+Interest+Penal), Dt Last Pay
+- Right Actions:
+  - Defaulter's List
+  - Excess Loan Over Limit
+  - Excess Recovered G.Loan & E.Loan
+  - Print
+  - Close
+- Behavior:
+  - Sort & filter on all columns
+  - Default shows all loans with scrolling
+  - Export to Excel/PDF (optional)
+  - Total auto-calculated per row
+
+Shared Frontend Requirements:
+- Reusable services for dropdown lookups (loan types, banks, voucher types, months, years)
+- HttpInterceptor attaches Bearer token
+- Guards: RoleGuard checks route data.roles
+- Centralized form validators (numbers, decimals, dates, required)
+- File upload component for photo/signature
+- Tailwind-based modals, tabs, tables, inputs
+
+==================================================
+BACKEND (ASP.NET CORE WEB API)
+==================================================
+Architecture:
+- Layers: Controllers → Services → Repositories → EF Core (SQL Server)
+- DTOs + FluentValidation or DataAnnotations
+- Global exception handling & problem details
+- AutoMapper
+
+Entities (minimum):
+- SuperAdmin, Society, SocietyAdmin, AppUser (role, EDPNo, contact fields), Member, Loan, MonthlyDemand (header + rows), Voucher (header + lines), PendingEdit, Lookup tables (LoanType, Bank, VoucherType, Month, Year)
+
+Key APIs:
+- Auth:
+  - POST /auth/login → JWT with role claims
+- Societies:
+  - CRUD + approval workflow: SocietyAdmin edits → PendingEdit; commit after all users accept
+- Users:
+  - CRUD (respect role scope)
+- Members:
+  - CRUD with MemNo auto-generation (MEM_001 pattern) on server
+- Loans:
+  - CRUD with LoanNo auto-generation
+  - Lookup endpoints for LoanTypes, Banks
+- MonthlyDemand:
+  - Create new month record, editable rows, totals endpoints
+  - Export Excel, Print views
+- Vouchers:
+  - CRUD with VoucherNo auto-generation
+  - Reverse, Print, Export endpoints
+  - Validation: total debit == total credit (reject otherwise)
+- Reports:
+  - Loan report (sortable/filterable server-side); defaulters, excess over limit, excess recovered (G/E loan) filters
+
+Auto-ID Generation:
+- Server-side, sequential per entity (e.g., MEM_001, LOAN_000001, VCH_000001)
+
+Security:
+- [Authorize] with Roles
+- Hash passwords (never store plain text)
+- Protect export/print endpoints by role
+
+==================================================
+DATABASE (SQL SERVER)
+==================================================
+Database: Fintcs (localhost)
+
+Tables (indicative):
+- SuperAdmins(Id, Username, PasswordHash, ...)
+- Societies(Id, Name, Address, City, Phone, Fax, Email, Website, RegNo, Interest_Dividend, Interest_OD, Interest_CD, Interest_Loan, Interest_EmergencyLoan, Interest_LAS, Limit_Share, Limit_Loan, Limit_EmergencyLoan, ChBounceChargeAmount, ChBounceChargeMode)
+- AppUsers(Id, Role, EDPNo, Name, AddressO, AddressR, Designation, PhoneO, PhoneR, Mobile, Email, Username, PasswordHash, SocietyId FK)
+- Members(Id, MemNo, ... fields above ..., SocietyId FK, Status, CreatedAt)
+- Loans(Id, LoanNo, LoanTypeId FK, LoanDate, EDPNo, Name, LoanAmount, PrevLoan, NetLoan, Installments, InstallmentAmount, Purpose, AuthorizedBy, PaymentMode, BankId FK, ChequeNo, ChequeDate, Share, CD, LastSalary, MWF, PayAmount, GivenJson, TakenJson, SocietyId FK)
+- MonthlyDemandHeader(Id, MonthId FK, YearValue, SocietyId FK, CreatedAt)
+- MonthlyDemandRow(Id, HeaderId FK, EDPNo, MemberName, LoanAmt, CD, Loan, Interest, ELoan, InterestExtra, Net, IntDue, PInt, PDed, LAS, Int, LASIntDue)
+- Vouchers(Id, VoucherNo, VoucherTypeId FK, Date, ChNo, ChequeDate, Narration, Remarks, PassDate, SocietyId FK)
+- VoucherLines(Id, VoucherId FK, ParticularsId/Name, Debit, Credit, DbCr, Ibldbc)
+- PendingEdits(Id, Entity, EntityId, PayloadJson, Status, CreatedByUserId, ApprovedByAllUsers)
+- Lookups: LoanTypes(Id, Name), Banks(Id, Name), VoucherTypes(Id, Name), Months(Id, Code), Years(Id, Value)
+
+Seed Data:
+- Super Admin (admin/admin with hash)
+- Lookup rows: LoanTypes, VoucherTypes, Banks, Months (JAN–DEC), Years (2000–2050)
+
+Indexes:
+- ON codes/numbers used for search: MemNo, LoanNo, VoucherNo, EDPNo
+
+==================================================
+DELIVERABLES
+==================================================
+1) Angular project (with Tailwind configured), modules/pages/services/guards/interceptors as above.
+2) ASP.Net Core Web API with controllers/services/repos, EF Core migrations, JWT auth.
+3) SQL Server script: schema + seed data.
+4) README with:
+   - Angular setup steps (npm i, ng serve, Tailwind config)
+   - Backend setup (ConnectionStrings.DefaultConnection to localhost; update appsettings.json)
+   - Apply EF migrations, run API, run Angular
+   - Default Super Admin login
