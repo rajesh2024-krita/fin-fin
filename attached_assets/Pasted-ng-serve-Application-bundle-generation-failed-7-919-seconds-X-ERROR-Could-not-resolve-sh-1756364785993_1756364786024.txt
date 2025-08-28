@@ -1,0 +1,181 @@
+ng serve
+Application bundle generation failed. [7.919 seconds]
+
+X [ERROR] Could not resolve "./shared/components/header/header.component"
+
+    src/app/app.component.ts:5:32:
+      5 │ ...aderComponent } from './shared/components/header/header.component';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './shared/components/header/header.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.component.ts:6:32:
+      6 │ ...aderComponent } from './shared/components/header/header.component';
+        ╵                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./shared/components/sidebar/sidebar.component"
+
+    src/app/app.component.ts:6:33:
+      6 │ ...arComponent } from './shared/components/sidebar/sidebar.component';
+        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './shared/components/sidebar/sidebar.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.component.ts:7:33:
+      7 │ ...arComponent } from './shared/components/sidebar/sidebar.component';
+        ╵                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, RouterOutlet, (not statically analyzable), (not statically analyzable)]'. [plugin angular-compiler]
+
+    src/app/app.component.ts:12:11:
+      12 │   imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarCo...
+         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, RouterOutlet, (not statically analyzable), (not statically analyzable)]'. [plugin angular-compiler]
+
+    src/app/app.component.ts:12:11:
+      12 │   imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarCo...
+         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/dashboard/dashboard.component"
+
+    src/app/app.routes.ts:10:36:
+      10 │ ... => import('./features/dashboard/dashboard.component').then(c =...
+         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/dashboard/dashboard.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:13:32:
+      13 │ ... => import('./features/dashboard/dashboard.component').then(c =...
+         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/societies/societies.component"
+
+    src/app/app.routes.ts:15:36:
+      15 │ ... => import('./features/societies/societies.component').then(c =...
+         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/societies/societies.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:18:32:
+      18 │ ... => import('./features/societies/societies.component').then(c =...
+         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/users/users.component"
+
+    src/app/app.routes.ts:21:36:
+      21 │ ...: () => import('./features/users/users.component').then(c => c....
+         ╵                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/users/users.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:24:32:
+      24 │ ...: () => import('./features/users/users.component').then(c => c....
+         ╵                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/members/members.component"
+
+    src/app/app.routes.ts:27:36:
+      27 │ ...() => import('./features/members/members.component').then(c => ...
+         ╵                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/members/members.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:30:32:
+      30 │ ...() => import('./features/members/members.component').then(c => ...
+         ╵                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/loans/loans.component"
+
+    src/app/app.routes.ts:33:36:
+      33 │ ...: () => import('./features/loans/loans.component').then(c => c....
+         ╵                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/loans/loans.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:36:32:
+      36 │ ...: () => import('./features/loans/loans.component').then(c => c....
+         ╵                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/vouchers/vouchers.component"
+
+    src/app/app.routes.ts:39:36:
+      39 │ ...) => import('./features/vouchers/vouchers.component').then(c =>...
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/vouchers/vouchers.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:42:32:
+      42 │ ...) => import('./features/vouchers/vouchers.component').then(c =>...
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/monthly-demand/monthly-demand.component"
+
+    src/app/app.routes.ts:45:36:
+      45 │ ...=> import('./features/monthly-demand/monthly-demand.component')...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/monthly-demand/monthly-demand.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:48:32:
+      48 │ ...=> import('./features/monthly-demand/monthly-demand.component')...
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./features/reports/reports.component"
+
+    src/app/app.routes.ts:51:36:
+      51 │ ...() => import('./features/reports/reports.component').then(c => ...
+         ╵                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './features/reports/reports.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:54:32:
+      54 │ ...() => import('./features/reports/reports.component').then(c => ...
+         ╵                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./shared/components/not-found/not-found.component"
+
+    src/app/app.routes.ts:61:36:
+      61 │ ...=> import('./shared/components/not-found/not-found.component')....
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module './shared/components/not-found/not-found.component' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:64:32:
+      64 │ ...=> import('./shared/components/not-found/not-found.component')....
+         ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "~@angular/material/prebuilt-themes/indigo-pink.css"
+
+    src/styles.scss:1:8:
+      1 │ @import '~@angular/material/prebuilt-themes/indigo-pink.css';
+        ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  You can mark the path "~@angular/material/prebuilt-themes/indigo-pink.css" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
