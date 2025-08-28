@@ -9,6 +9,6 @@ namespace Fintcs.Api.Services
         Task<UserDto?> GetUserByIdAsync(string id);
         Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<UserDto> UpdateUserAsync(string id, UpdateUserDto updateUserDto);
-        Task<DeleteUserAsync(string id);
+        Task DeleteUserAsync(string id);
     }
 }

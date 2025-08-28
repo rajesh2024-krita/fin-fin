@@ -4,11 +4,19 @@ import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
+import { HttpClientModule, HttpClient } from '@angular/common/http'; // Import HttpClientModule and HttpClient
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent, RouterModule],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterModule,
+    HeaderComponent,
+    SidebarComponent,
+    HttpClientModule // Add HttpClientModule here
+  ],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div *ngIf="!isLoginPage" class="flex h-screen">
@@ -38,7 +46,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient // Inject HttpClient
   ) {}
 
   ngOnInit() {
