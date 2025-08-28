@@ -1,19 +1,38 @@
+
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { useAuth, getAuthHeaders } from "@/hooks/useAuth";
-import { Building, Users, DollarSign, AlertTriangle, Plus, Eye, Edit, UserPlus, Receipt, Download } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Building, 
+  Users, 
+  UserCheck, 
+  CreditCard, 
+  TrendingUp, 
+  TrendingDown,
+  DollarSign,
+  Activity,
+  Calendar,
+  ExternalLink,
+  RefreshCw,
+  Filter,
+  MoreVertical
+} from "lucide-react";
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardStats {
   totalSocieties: number;
-  activeMembers: number;
-  totalLoans: string;
-  outstanding: string;
+  totalUsers: number;
+  totalMembers: number;
+  totalLoans: number;
+  totalLoanAmount: number;
+  activeDemands: number;
+  pendingVouchers: number;
+  monthlyGrowth: number;
 }
 
 interface RecentLoan {
@@ -24,300 +43,307 @@ interface RecentLoan {
   loanAmount: string;
   loanType: string;
   status: string;
+  date: string;
 }
 
-const loanColumns: ColumnDef<RecentLoan>[] = [
-  {
-    accessorKey: "loanNo",
-    header: "Loan No.",
-    cell: ({ row }) => (
-      <div className="font-medium" data-testid={`loan-no-${row.original.id}`}>
-        {row.getValue("loanNo")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: "Member",
-    cell: ({ row }) => (
-      <div>
-        <p className="text-sm font-medium">{row.getValue("name")}</p>
-        <p className="text-xs text-muted-foreground">{row.original.edpNo}</p>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "loanAmount",
-    header: "Amount",
-    cell: ({ row }) => (
-      <div className="font-semibold">₹{row.getValue("loanAmount")}</div>
-    ),
-  },
-  {
-    accessorKey: "loanType",
-    header: "Type",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      const variant = status === "Approved" ? "default" : status === "Pending" ? "secondary" : "destructive";
-      return <Badge variant={variant}>{status}</Badge>;
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <Button variant="ghost" size="sm" data-testid={`view-loan-${row.original.id}`}>
-          <Eye className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="sm" data-testid={`edit-loan-${row.original.id}`}>
-          <Edit className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  },
-];
+interface QuickAction {
+  title: string;
+  description: string;
+  href: string;
+  icon: any;
+  color: string;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<DashboardStats>({
     queryKey: ["/api", "dashboard", "stats"],
   });
 
   const { data: recentLoans = [], isLoading: loansLoading } = useQuery<RecentLoan[]>({
     queryKey: ["/api", "loans"],
     select: (loans: any[]) => {
-      // Transform the data for display
-      return loans.slice(0, 10).map((loan: any) => ({
+      return loans.slice(0, 6).map((loan: any) => ({
         id: loan.id,
         loanNo: loan.loanNo,
         name: loan.name || "N/A",
         edpNo: loan.edpNo || "N/A",
         loanAmount: Number(loan.loanAmount).toLocaleString(),
-        loanType: "Personal", // Would come from loan type lookup
+        loanType: "Personal",
         status: loan.isValidated ? "Approved" : "Pending",
+        date: new Date().toLocaleDateString(),
       }));
     },
   });
 
+  const quickActions: QuickAction[] = [
+    {
+      title: "New Member",
+      description: "Register a new society member",
+      href: "/members",
+      icon: UserCheck,
+      color: "bg-emerald-500"
+    },
+    {
+      title: "Process Loan",
+      description: "Create or process loan applications",
+      href: "/loans",
+      icon: CreditCard,
+      color: "bg-blue-500"
+    },
+    {
+      title: "Monthly Demand",
+      description: "Calculate monthly demands",
+      href: "/monthly-demand",
+      icon: Calendar,
+      color: "bg-purple-500"
+    },
+    {
+      title: "Generate Report",
+      description: "View financial reports and analytics",
+      href: "/reports",
+      icon: Activity,
+      color: "bg-orange-500"
+    }
+  ];
+
+  const getWelcomeMessage = () => {
+    const hour = new Date().getHours();
+    const name = user?.name || user?.username;
+    
+    if (hour < 12) return `Good morning, ${name}`;
+    if (hour < 18) return `Good afternoon, ${name}`;
+    return `Good evening, ${name}`;
+  };
+
+  const StatsCard = ({ title, value, change, changeType, icon: Icon, isLoading }: {
+    title: string;
+    value: string | number;
+    change: string;
+    changeType: 'positive' | 'negative' | 'neutral';
+    icon: any;
+    isLoading: boolean;
+  }) => (
+    <Card className="stats-card hover:shadow-lg transition-all duration-200">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <p className="stats-label text-muted-foreground font-medium">{title}</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-20" />
+            ) : (
+              <p className="stats-value">{value}</p>
+            )}
+            <div className={`stats-change flex items-center space-x-1 ${
+              changeType === 'positive' ? 'stats-change-positive' : 
+              changeType === 'negative' ? 'stats-change-negative' : 
+              'text-muted-foreground'
+            }`}>
+              {changeType === 'positive' && <TrendingUp className="h-3 w-3" />}
+              {changeType === 'negative' && <TrendingDown className="h-3 w-3" />}
+              <span className="text-sm font-medium">{change}</span>
+            </div>
+          </div>
+          <div className={`stats-icon ${
+            changeType === 'positive' ? 'bg-emerald-100 text-emerald-600' :
+            changeType === 'negative' ? 'bg-red-100 text-red-600' :
+            'bg-blue-100 text-blue-600'
+          }`}>
+            <Icon className="h-6 w-6" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
       <main className="flex-1 overflow-hidden flex flex-col">
         <Header 
-          title="Dashboard Overview" 
-          subtitle="Welcome back, manage your finance operations" 
+          title={getWelcomeMessage()}
+          subtitle="Here's what's happening with your finance operations today"
+          onMenuClick={() => setSidebarOpen(true)}
         />
         
-        <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="card-hover" data-testid="stats-societies">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Societies</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {statsLoading ? "..." : stats?.totalSocieties || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Building className="text-primary text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-secondary font-medium">+2.5%</span>
-                  <span className="text-muted-foreground ml-1">from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover" data-testid="stats-members">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Active Members</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {statsLoading ? "..." : stats?.activeMembers || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                    <Users className="text-secondary text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-secondary font-medium">+5.1%</span>
-                  <span className="text-muted-foreground ml-1">from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover" data-testid="stats-loans">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Loans</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {statsLoading ? "..." : stats?.totalLoans || "₹0L"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                    <DollarSign className="text-accent text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-secondary font-medium">+8.2%</span>
-                  <span className="text-muted-foreground ml-1">from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="card-hover" data-testid="stats-outstanding">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {statsLoading ? "..." : stats?.outstanding || "₹0L"}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="text-destructive text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-destructive font-medium">-1.2%</span>
-                  <span className="text-muted-foreground ml-1">from last month</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Loans */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-foreground">Recent Loan Applications</h3>
-                    <Button variant="ghost" className="text-sm text-primary hover:text-primary/80 font-medium" data-testid="view-all-loans">
-                      View All
-                    </Button>
-                  </div>
-                  
-                  {loansLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                  ) : (
-                    <DataTable
-                      columns={loanColumns}
-                      data={recentLoans.slice(0, 5)}
-                      searchKey="name"
-                      searchPlaceholder="Search loans..."
-                    />
-                  )}
-                </CardContent>
-              </Card>
+        <div className="flex-1 overflow-y-auto bg-muted/30">
+          <div className="p-4 lg:p-6 space-y-6">
+            {/* Stats Overview */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold tracking-tight">Overview</h2>
+                <Button variant="outline" size="sm" onClick={() => refetchStats()}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <StatsCard
+                  title="Total Societies"
+                  value={stats?.totalSocieties || 0}
+                  change="+2.5% from last month"
+                  changeType="positive"
+                  icon={Building}
+                  isLoading={statsLoading}
+                />
+                <StatsCard
+                  title="Active Members"
+                  value={stats?.totalMembers || 0}
+                  change="+12% from last month"
+                  changeType="positive"
+                  icon={UserCheck}
+                  isLoading={statsLoading}
+                />
+                <StatsCard
+                  title="Total Loans"
+                  value={stats?.totalLoans || 0}
+                  change="+8.2% from last month"
+                  changeType="positive"
+                  icon={CreditCard}
+                  isLoading={statsLoading}
+                />
+                <StatsCard
+                  title="Loan Amount"
+                  value={`₹${(stats?.totalLoanAmount || 0).toLocaleString()}`}
+                  change="+15.3% from last month"
+                  changeType="positive"
+                  icon={DollarSign}
+                  isLoading={statsLoading}
+                />
+              </div>
             </div>
 
-            {/* Quick Actions & Chart */}
-            <div className="space-y-6">
-              {/* Quick Actions */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
-                  <div className="space-y-3">
-                    <Button 
-                      className="w-full justify-start" 
-                      variant="outline"
-                      data-testid="quick-action-new-loan"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      New Loan Entry
-                    </Button>
-                    
-                    <Button 
-                      className="w-full justify-start" 
-                      variant="outline"
-                      data-testid="quick-action-add-member"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Add Member
-                    </Button>
-                    
-                    <Button 
-                      className="w-full justify-start" 
-                      variant="outline"
-                      data-testid="quick-action-create-voucher"
-                    >
-                      <Receipt className="w-4 h-4 mr-2" />
-                      Create Voucher
-                    </Button>
-                    
-                    <Button 
-                      className="w-full justify-start" 
-                      variant="outline"
-                      data-testid="quick-action-export-report"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Export Report
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Recent Loans */}
+              <div className="xl:col-span-2">
+                <Card className="h-full">
+                  <CardHeader className="flex flex-row items-center justify-between pb-4">
+                    <div>
+                      <CardTitle className="text-lg font-semibold">Recent Loans</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">Latest loan applications and approvals</p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Filter className="h-4 w-4 mr-2" />
+                        Filter
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="space-y-0">
+                      {loansLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="flex items-center justify-between p-4 border-b last:border-b-0">
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                            <Skeleton className="h-6 w-16" />
+                          </div>
+                        ))
+                      ) : recentLoans.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No recent loans found</p>
+                        </div>
+                      ) : (
+                        recentLoans.map((loan) => (
+                          <div key={loan.id} className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
+                            <div className="space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <p className="font-medium text-sm">{loan.name}</p>
+                                <Badge variant="outline" className="text-xs">
+                                  {loan.loanNo}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                EDP: {loan.edpNo} • {loan.loanType}
+                              </p>
+                            </div>
+                            <div className="text-right space-y-1">
+                              <p className="font-semibold text-sm">₹{loan.loanAmount}</p>
+                              <Badge 
+                                variant={loan.status === "Approved" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {loan.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Loan Distribution Chart Placeholder */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Loan Distribution</h3>
-                  <div className="h-64 flex items-center justify-center bg-muted/30 rounded-lg">
-                    <div className="text-center">
-                      <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">Chart will be rendered here</p>
-                      <p className="text-xs text-muted-foreground mt-1">Loan types distribution</p>
-                    </div>
-                  </div>
-                  
-                  {/* Legend */}
-                  <div className="mt-4 space-y-2">
+              {/* Quick Actions */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+                    <p className="text-sm text-muted-foreground">Common tasks and operations</p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {quickActions.map((action, index) => {
+                      const Icon = action.icon;
+                      return (
+                        <Button
+                          key={index}
+                          variant="ghost"
+                          className="w-full justify-start h-auto p-3 hover:bg-muted"
+                          onClick={() => window.location.href = action.href}
+                        >
+                          <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
+                            <Icon className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-sm">{action.title}</p>
+                            <p className="text-xs text-muted-foreground">{action.description}</p>
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+
+                {/* System Status */}
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-semibold">System Status</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
+                      <span className="text-sm">Database</span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-primary rounded-full"></div>
-                        <span className="text-sm">Personal</span>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        <span className="text-xs text-muted-foreground">Online</span>
                       </div>
-                      <span className="text-sm font-medium">35%</span>
                     </div>
                     <div className="flex items-center justify-between">
+                      <span className="text-sm">API Services</span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-secondary rounded-full"></div>
-                        <span className="text-sm">Housing</span>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                        <span className="text-xs text-muted-foreground">Online</span>
                       </div>
-                      <span className="text-sm font-medium">28%</span>
                     </div>
                     <div className="flex items-center justify-between">
+                      <span className="text-sm">Backup Status</span>
                       <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-accent rounded-full"></div>
-                        <span className="text-sm">Vehicle</span>
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span className="text-xs text-muted-foreground">Pending</span>
                       </div>
-                      <span className="text-sm font-medium">22%</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
-                        <span className="text-sm">Others</span>
-                      </div>
-                      <span className="text-sm font-medium">15%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>

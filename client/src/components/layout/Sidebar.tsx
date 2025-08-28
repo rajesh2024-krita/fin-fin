@@ -1,129 +1,187 @@
-import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Building,
-  Users,
-  UserPlus,
-  CreditCard,
-  Calendar,
-  Receipt,
-  BarChart3,
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Users, 
+  UserCheck, 
+  CreditCard, 
+  Calculator, 
+  Receipt, 
   FileText,
-  ChartLine,
-  LogOut,
+  ChevronLeft,
+  TrendingUp,
+  Shield
 } from "lucide-react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
-interface NavItemProps {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-function NavItem({ href, icon, label }: NavItemProps) {
+export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const [location, setLocation] = useLocation();
-  const isActive = location === href || (href === "/dashboard" && location === "/");
+  const { user } = useAuth();
+
+  const navigationItems = [
+    {
+      section: "Overview",
+      items: [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["Super Admin", "Society Admin", "User", "Member"] },
+      ]
+    },
+    {
+      section: "Management",
+      items: [
+        { name: "Societies", href: "/societies", icon: Building2, roles: ["Super Admin", "Society Admin"] },
+        { name: "Users", href: "/users", icon: Users, roles: ["Super Admin", "Society Admin"] },
+        { name: "Members", href: "/members", icon: UserCheck, roles: ["Super Admin", "Society Admin", "User"] },
+      ]
+    },
+    {
+      section: "Financial Operations",
+      items: [
+        { name: "Loans", href: "/loans", icon: CreditCard, roles: ["Super Admin", "Society Admin", "User"] },
+        { name: "Monthly Demand", href: "/monthly-demand", icon: Calculator, roles: ["Super Admin", "Society Admin", "User"] },
+        { name: "Vouchers", href: "/vouchers", icon: Receipt, roles: ["Super Admin", "Society Admin", "User"] },
+      ]
+    },
+    {
+      section: "Analytics",
+      items: [
+        { name: "Reports", href: "/reports", icon: FileText, roles: ["Super Admin", "Society Admin", "User"] },
+      ]
+    }
+  ];
+
+  const hasAccess = (roles: string[]) => {
+    return user?.role && roles.includes(user.role);
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "Super Admin": return Shield;
+      case "Society Admin": return Building2;
+      case "User": return Users;
+      case "Member": return UserCheck;
+      default: return Users;
+    }
+  };
 
   return (
-    <button
-      onClick={() => setLocation(href)}
-      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-left ${
-        isActive
-          ? "bg-primary-foreground/10 text-primary-foreground font-medium"
-          : "text-primary-foreground/80 hover:bg-primary-foreground/5 hover:text-primary-foreground"
-      }`}
-    >
-      <span className="text-sm">{icon}</span>
-      <span className="text-sm">{label}</span>
-    </button>
-  );
-}
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-export function Sidebar() {
-  const { user, logout } = useAuth();
-
-  return (
-    <aside className="w-64 bg-primary text-primary-foreground flex-shrink-0 sidebar-transition">
-      <div className="flex flex-col h-full">
-        {/* Logo & Brand */}
-        <div className="p-6 border-b border-primary/20">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-              <ChartLine className="text-accent-foreground text-lg" />
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed top-0 left-0 z-50 h-full w-72 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="sidebar-header relative">
+            <div className="sidebar-logo">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary">
+                <TrendingUp className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div className="flex flex-col">
+                <span className="sidebar-brand text-lg font-bold">Fintcs</span>
+                <span className="sidebar-tagline text-xs opacity-80">Finance Management</span>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">Fintcs</h1>
-              <p className="text-xs opacity-80">Finance Management</p>
+            
+            {/* Close button for mobile */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 lg:hidden text-sidebar-foreground hover:bg-sidebar-accent/10"
+              onClick={onClose}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* User Info */}
+          <div className="px-6 py-4 border-b border-sidebar-border">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-accent/20">
+                {(() => {
+                  const RoleIcon = getRoleIcon(user?.role || "");
+                  return <RoleIcon className="h-5 w-5 text-sidebar-accent" />;
+                })()}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-medium text-sidebar-foreground truncate">
+                  {user?.name || user?.username}
+                </span>
+                <Badge 
+                  variant="outline" 
+                  className="text-xs w-fit border-sidebar-accent/30 text-sidebar-accent bg-sidebar-accent/10"
+                >
+                  {user?.role}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <ScrollArea className="sidebar-nav flex-1">
+            <div className="space-y-6 py-4">
+              {navigationItems.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="sidebar-nav-section">
+                  <h3 className="sidebar-nav-heading">
+                    {section.section}
+                  </h3>
+                  <div className="space-y-1">
+                    {section.items
+                      .filter(item => hasAccess(item.roles))
+                      .map((item, itemIndex) => {
+                        const isActive = location === item.href;
+                        const Icon = item.icon;
+                        
+                        return (
+                          <Button
+                            key={itemIndex}
+                            variant="ghost"
+                            className={cn(
+                              "sidebar-nav-item w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/10 hover:text-sidebar-accent-foreground",
+                              isActive && "bg-sidebar-accent/20 text-sidebar-accent-foreground font-medium"
+                            )}
+                            onClick={() => {
+                              setLocation(item.href);
+                              onClose?.();
+                            }}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span>{item.name}</span>
+                          </Button>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          {/* Footer */}
+          <div className="border-t border-sidebar-border p-4">
+            <div className="text-xs text-sidebar-foreground/70 text-center">
+              © 2024 Fintcs v2.0
             </div>
           </div>
         </div>
-
-        {/* User Info */}
-        <div className="p-4 border-b border-primary/20">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-              <Users className="text-white text-sm" />
-            </div>
-            <div>
-              <p className="text-sm font-medium" data-testid="user-name">
-                {user?.name}
-              </p>
-              <p className="text-xs opacity-70" data-testid="user-role">
-                {user?.role}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto py-4">
-          <div className="space-y-1 px-3">
-            <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2">
-              Main
-            </p>
-
-            <NavItem href="/dashboard" icon={<BarChart3 />} label="Dashboard" />
-
-            {(user?.role === "SuperAdmin" || user?.role === "SocietyAdmin") && (
-              <>
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2 mt-6">
-                  Management
-                </p>
-
-                {user?.role === "SuperAdmin" && (
-                  <NavItem href="/societies" icon={<Building />} label="Societies" />
-                )}
-
-                <NavItem href="/users" icon={<Users />} label="Users" />
-                <NavItem href="/members" icon={<UserPlus />} label="Members" />
-                <NavItem href="/loans" icon={<CreditCard />} label="Loans" />
-                <NavItem href="/monthly-demand" icon={<Calendar />} label="Monthly Demand" />
-                <NavItem href="/vouchers" icon={<Receipt />} label="Vouchers" />
-
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider opacity-70 mb-2 mt-6">
-                  Reports
-                </p>
-                <NavItem href="/reports" icon={<FileText />} label="Reports" />
-              </>
-            )}
-          </div>
-        </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-primary/20">
-          <Button
-            onClick={logout}
-            variant="ghost"
-            className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-destructive/20 text-destructive-foreground w-full transition-colors"
-            data-testid="logout-button"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </Button>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

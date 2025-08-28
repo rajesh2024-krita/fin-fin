@@ -279,19 +279,104 @@
 
 /* Professional finance-specific styling */
 .finance-amount {
-  @apply font-mono text-right;
+  @apply font-mono text-right tabular-nums;
 }
 
 .finance-positive {
-  @apply text-secondary;
+  @apply text-emerald-600;
 }
 
 .finance-negative {
-  @apply text-destructive;
+  @apply text-red-600;
 }
 
 .finance-neutral {
-  @apply text-muted-foreground;
+  @apply text-slate-600;
+}
+
+/* Modern professional animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* Professional glass effect */
+.glass-effect {
+  @apply bg-white/10 backdrop-blur-lg border border-white/20;
+}
+
+.glass-effect-dark {
+  @apply bg-gray-900/10 backdrop-blur-lg border border-gray-800/20;
+}
+
+/* Professional gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+}
+
+.gradient-muted {
+  background: linear-gradient(135deg, hsl(var(--muted)), hsl(var(--card)));
+}
+
+/* Professional focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+}
+
+/* Container utilities */
+.container-responsive {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.section-spacing {
+  @apply py-8 lg:py-12;
+}
+
+/* Professional grid layouts */
+.grid-responsive {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6;
+}
+
+.grid-auto-fit {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.grid-auto-fill {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 /* Professional voucher entry styling */
@@ -451,6 +536,12 @@
 }
 
 /* Enhanced responsive design */
+@media (max-width: 1280px) {
+  .container-xl {
+    @apply max-w-6xl;
+  }
+}
+
 @media (max-width: 1024px) {
   .form-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -463,23 +554,79 @@
   .stats-value {
     @apply text-2xl;
   }
+  
+  .sidebar-transition {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-open {
+    transform: translateX(0);
+  }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
   
   .data-table-cell {
+    @apply px-3 py-2 text-sm;
+  }
+  
+  .header-title {
+    @apply text-lg;
+  }
+  
+  .stats-value {
+    @apply text-xl;
+  }
+  
+  .card-grid {
+    @apply grid-cols-1;
+  }
+}
+
+@media (max-width: 640px) {
+  .data-table-cell {
     @apply px-2 py-2 text-xs;
   }
   
   .header-title {
-    @apply text-xl;
+    @apply text-base;
   }
   
   .sidebar-nav-item {
-    @apply px-2 py-1;
+    @apply px-2 py-1 text-sm;
+  }
+  
+  .stats-card {
+    @apply p-3;
+  }
+  
+  .stats-value {
+    @apply text-lg;
+  }
+  
+  .form-section {
+    @apply p-4;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-card {
+    @apply p-2;
+  }
+  
+  .stats-value {
+    @apply text-base;
+  }
+  
+  .data-table-cell {
+    @apply px-1 py-1 text-xs;
+  }
+  
+  .sidebar-nav-item {
+    @apply px-1 py-1 text-xs;
   }
 }
 
